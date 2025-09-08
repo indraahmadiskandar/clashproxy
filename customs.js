@@ -85,7 +85,7 @@ function parseFormLike(){
 function renderHosts(){
   if(!hostCols.length){ hostsDiv.innerHTML='<div style="color:#aeb8d8">No HOST columns detected</div>'; return; }
   var html = '';
-  html += '<table><thead><tr><th>Col</th><th>HOST</th><th>SERVER</th><th>PORT</th><th>PASSWORD/UUID</th><th>PATH</th><th>TLS</th></tr></thead><tbody>';
+  html += '<table><thead><tr><th>No</th><th>HOST</th><th>SERVER</th><th>PORT</th><th>PASSWORD/UUID</th><th>PATH</th><th>TLS</th></tr></thead><tbody>';
   for(var i=0;i<hostCols.length;i++){
     var h = hostCols[i];
     html += '<tr>'
