@@ -89,7 +89,7 @@ function renderHosts(){
   for(var i=0;i<hostCols.length;i++){
     var h = hostCols[i];
     html += '<tr>'
-      + '<td>'+colName(h.colIdx)+'</td>'
+      + '<td>'+(i+1)+'</td>'
       + '<td>'+esc(h.host)+'</td>'
       + '<td>'+esc(h.server)+'</td>'
       + '<td>'+esc(h.port)+'</td>'
