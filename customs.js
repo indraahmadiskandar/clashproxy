@@ -98,7 +98,7 @@ function renderHosts() {
       + '</tr>';
   }
   html += '</tbody></table>';
-  html += '<div style="margin-top:8px;color:#aeb8d8">BUG count: ' + bugList.length + '</div>';
+  html += '<div style="margin-top:8px;color:#aeb8d8">BUG : ' + bugList.length + '</div>';
   if (bugList.length) {
     html += '<div style="max-height:120px;overflow:auto;margin-top:4px;border:1px solid #23305a;border-radius:8px">';
     html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
