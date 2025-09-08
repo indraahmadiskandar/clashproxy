@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Open Clash Proxy Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:#0e1224;color:#eaf0ff}
+  header{padding:16px 20px;border-bottom:1px solid #1e2746}
+  main{padding:20px;max-width:1200px;margin:0 auto;display:grid;gap:16px}
+  .card{background:#151b2f;border:1px solid #263155;border-radius:12px;padding:16px}
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  input[type=file]{padding:10px;background:#0f1530;border:1px dashed #2a3460;border-radius:10px;color:#aeb8d8}
+  textarea{background:#0f1530;border:1px solid #2a3460;border-radius:10px;color:#dfe7ff;padding:8px 10px;width:100%;min-height:420px}
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid #2a3460;background:#0f1530;color:#fff;cursor:pointer}
+  .btn.primary{background:linear-gradient(180deg,#2a7bff,#1f5ee6);border:none}
+  .grid{display:grid;grid-template-columns: 1fr 1fr;gap:16px}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{border-bottom:1px solid #23305a;padding:8px 10px;text-align:left}
+  th{position:sticky;top:0;background:#101731}
+  .optcol{columns: 280px 3; column-gap:16px}
+  .optcol label{display:block; break-inside:avoid; margin:4px 0}
+</style>
+</head>
+<body>
+<header>
+<h2 style="margin: 0; text-align:center">⚙️ OPEN CLASH PROXY GENERATOR</h2></header>
+<main>
+  <section class="card">
+    <h3 style="margin-top:0">Modes (pilih manual)</h3>
+    <div class="optcol" id="modes">
+      <label><input type="checkbox" data-mode="trojan_ws_sni"> Trojan WS (SNI)</label>
+      <label><input type="checkbox" data-mode="trojan_xtls_sni"> Trojan XTLS (SNI)</label>
+      <label><input type="checkbox" data-mode="vmess_ws_cdn_sni"> VMESS WS (CDN, TLS, SNI)</label>
+      <label><input type="checkbox" data-mode="vmess_ws_cdn_ntls"> VMESS WS (CDN, Non-TLS)</label>
+      <label><input type="checkbox" data-mode="vmess_grpc_sni"> VMESS gRPC (SNI)</label>
+      <label><input type="checkbox" data-mode="vless_ws_cdn_sni"> VLESS WS (CDN, TLS, SNI)</label>
+      <label><input type="checkbox" data-mode="vless_ws_cdn_ntls"> VLESS WS (CDN, Non-TLS)</label>
+      <label><input type="checkbox" data-mode="vless_grpc_sni"> VLESS gRPC (SNI)</label>
+    </div>
+    <small style="color:#aeb8d8">Semua mode default tidak dipilih. Centang yang dibutuhkan saja.</small>
+  </section>
+
+  <section class="card">
+    <div class="row">
+      <input id="file" type="file" accept=".xlsx,.xls" />
+      <button id="parse" class="btn primary" disabled>Parse Excel</button>
+      <button id="gen" class="btn" disabled>Generate YAML</button>
+      <button id="dl" class="btn" disabled>Download YAML</button>
+		<a href="https://docs.google.com/spreadsheets/d/1OZtgPxj1et7PK4SyRnBukL-FknLxzqMu/edit?usp=sharing&ouid=102709591099530106433&rtpof=true&sd=true" target="_blank" rel="noopener" class="btn">Download Template</a>
+	</div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h3 style="margin:0 0 6px 0">Detected HOST sets</h3>
+      <div id="hosts"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 6px 0;">Generated YAML</h3>
+      <textarea id="out" style="width: 96%" placeholder="YAML will appear here"></textarea>
+    </div>
+  </section>
+
+  <section class="card" id="donate">
+    <h3 style="margin:0 0 8px 0">☕ Saweria</h3>
+    <div class="row" style="gap:16px;align-items:flex-end">
+      <div id="qrcode" style="width:100px;height:100px;background:#0f1530;border:1px solid #2a3460;border-radius:12px;display:flex;align-items:center;justify-content:center"></div>
+      <div>
+        <div style="color:#aeb8d8;margin-bottom:8px">Scan untuk berdonasi:</div>
+        <a href="https://saweria.co/zeusid6" target="_blank" rel="noopener" class="btn">Buka Saweria</a>
+        <button id="dlQR" class="btn">Download QR</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script src="customs.js"></script>
+</body>
+</html>
