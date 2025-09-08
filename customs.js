@@ -70,7 +70,7 @@ function parseFormLike() {
   hostCols = []; bugList = [];
   for (let c = 1; c < (matrix[0]?.length || 64); c++) {
     const host = val(1, c); if (!host) continue;
-    hostCols.push({ colIdx: c, host, server: val(2, c), port: val(3, c), password: val(4, c), path: val(5, c), tls: (val(6, c) || 'true') });
+    hostCols.push({ colIdx: c, host, server: val(2, c), password: val(3, c), path: val(4, c), grpcName: val(5, c) });
   }
   let bugStart = -1;
   for (let r = 0; r < matrix.length; r++) {
@@ -85,17 +85,16 @@ function parseFormLike() {
 function renderHosts() {
   if (!hostCols.length) { hostsDiv.innerHTML = '<div style="color:#aeb8d8">No HOST columns detected</div>'; return; }
   var html = '';
-  html += '<table><thead><tr><th>No</th><th>HOST</th><th>SERVER</th><th>PORT</th><th>PASSWORD/UUID</th><th>PATH</th><th>TLS</th></tr></thead><tbody>';
+  html += '<table><thead><tr><th>NO</th><th>EXPIRED</th><th>SERVER/HOST</th><th>PASSWORD/UUID</th><th>PATH</th><th>GRPC NAME</th></tr></thead><tbody>';
   for (var i = 0; i < hostCols.length; i++) {
     var h = hostCols[i];
     html += '<tr>'
       + '<td>' + (i + 1) + '</td>'
       + '<td>' + esc(h.host) + '</td>'
       + '<td>' + esc(h.server) + '</td>'
-      + '<td>' + esc(h.port) + '</td>'
       + '<td>' + esc(h.password) + '</td>'
       + '<td>' + esc(h.path) + '</td>'
-      + '<td>' + esc(h.tls) + '</td>'
+      + '<td>' + esc(h.grpcName) + '</td>'
       + '</tr>';
   }
   html += '</tbody></table>';
@@ -103,7 +102,7 @@ function renderHosts() {
   if (bugList.length) {
     html += '<div style="max-height:120px;overflow:auto;margin-top:4px;border:1px solid #23305a;border-radius:8px">';
     html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
-    html += '<thead><tr><th style="width:48px;text-align:left;padding:6px 10px;border-bottom:1px solid #23305a;background:#101731">No</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #23305a;background:#101731">BUG</th></tr></thead>';
+    html += '<thead><tr><th style="width:48px;text-align:left;padding:6px 10px;border-bottom:1px solid #23305a;background:#101731">NO</th><th style="text-align:left;padding:6px 10px;border-bottom:1px solid #23305a;background:#101731">BUG</th></tr></thead>';
     html += '<tbody>';
     for (var j = 0; j < bugList.length; j++) {
       var b = bugList[j];
@@ -132,29 +131,40 @@ function generateYaml() {
   if (selectedModes.length === 0) return '';
   const lines = ['proxies:'];
   for (const h of hostCols) {
-    const baseServer = h.server || h.host;
+    const baseServer = h.server;
     const basePath = (h.path || '').replace(/^\/?/, ''); // only from Excel
-    const tls = toBool(h.tls);
     const bugs = bugList.length ? bugList : [''];
     for (const bug of bugs) {
       const nameBase = h.host + (bug ? ' ' + bug : '');
       for (const mode of selectedModes) {
-        if (mode === 'trojan_ws_sni') {
-          lines.push(...tplTrojanWsSni(nameBase, baseServer, h.port, h.password, bug, basePath, tls));
+        if (mode === 'trojan_gfw_sni') {
+          lines.push(...tplTrojanGfwSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'trojan_ws_sni') {
+          lines.push(...tplTrojanWsSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'trojan_gows_cdn') {
+          lines.push(...tplTrojanGowsCdn(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
         } else if (mode === 'trojan_xtls_sni') {
-          lines.push(...tplTrojanXtlsSni(nameBase, baseServer, h.port, h.password, bug));
-        } else if (mode === 'vless_ws_cdn_sni') {
-          lines.push(...tplVlessWsCdn(nameBase, baseServer, h.port, h.password, bug, basePath, true));
-        } else if (mode === 'vless_ws_cdn_ntls') {
-          lines.push(...tplVlessWsCdn(nameBase, baseServer, h.port, h.password, bug, basePath, false));
-        } else if (mode === 'vless_grpc_sni') {
-          lines.push(...tplVlessGrpc(nameBase, baseServer, h.port, h.password, bug, basePath, true));
-        } else if (mode === 'vmess_ws_cdn_sni') {
-          lines.push(...tplVmessWsCdn(nameBase, baseServer, h.port, h.password, bug, basePath, true));
+          lines.push(...tplTrojanXtlsSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'trojan_grpc_sni') {
+          lines.push(...tplTrojanGrpcSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'vmess_ws_sni') {
+          lines.push(...tplVmessWsSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'vmess_ws_cdn') {
+          lines.push(...tplVmessWsCdn(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
         } else if (mode === 'vmess_ws_cdn_ntls') {
-          lines.push(...tplVmessWsCdn(nameBase, baseServer, h.port, h.password, bug, basePath, false));
+          lines.push(...tplVmessWsCdnNtls(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
         } else if (mode === 'vmess_grpc_sni') {
-          lines.push(...tplVmessGrpc(nameBase, baseServer, h.port, h.password, bug, basePath, true));
+          lines.push(...tplVmessGrpcSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'vless_ws_sni') {
+          lines.push(...tplVlessWsSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'vless_ws_cdn') {
+          lines.push(...tplVlessWsCdn(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'vless_ws_cdn_ntls') {
+          lines.push(...tplVlessWsCdnNtls(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'vless_xtls_sni') {
+          lines.push(...tplVlessXtlsSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+        } else if (mode === 'vless_grpc_sni') {
+          lines.push(...tplVlessGrpcSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
         }
       }
     }
@@ -163,112 +173,282 @@ function generateYaml() {
 }
 
 // Templates (no quotes)
-function tplTrojanWsSni(name, server, port, password, sni, path, tls) {
-  const n = 'TRJWS ' + name;
+function tplTrojanGfwSni(name, server, password, bug, path, grpcName) {
+  const n = 'TRJGFWSNI ' + name;
   const a = [
     '  - name: ' + ystr_noquote(n),
     '    type: trojan',
     '    server: ' + ystr_noquote(server),
-    '    port: ' + (Number(port) || 443),
+    '    port: 443',
     '    password: ' + ystr_noquote(password),
     '    udp: true',
-    '    network: ws'
+    '    sni: ' + ystr_noquote(bug),
+    '    skip-cert-verify: true',
   ];
-  if (tls) a.push('    tls: true');
-  if (sni) a.push('    sni: ' + ystr_noquote(sni));
-  a.push('    ws-opts:');
-  a.push('      path: /' + ystr_noquote(path || ''));
-  a.push('      headers:\n        Host: ' + ystr_noquote(server));
   return a;
 }
-function tplTrojanXtlsSni(name, server, port, password, sni) {
-  const n = 'TRJXTLSSNI ' + name;
+
+function tplTrojanWsSni(name, server, password, bug, path, grpcName) {
+  const n = 'TRJWSSNI ' + name;
   const a = [
     '  - name: ' + ystr_noquote(n),
-    '    type: trojan',
     '    server: ' + ystr_noquote(server),
-    '    port: ' + (Number(port) || 443),
+    '    port: 443',
+    '    type: trojan',
+    '    password: ' + ystr_noquote(password),
+    '    skip-cert-verify: true',
+    '    sni: ' + ystr_noquote(bug),
+    '    network: ws',
+    '    ws-opts:',
+    '      path: ' + ystr_noquote(path),
+    '      headers:',
+    '        Host: ' + ystr_noquote(bug),
+    '    udp: true',
+  ];
+  return a;
+}
+
+function tplTrojanGowsCdn(name, server, password, bug, path, grpcName) {
+  const n = 'TRJGOWSCDN ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(bug),
+    '    port: 443',
+    '    type: trojan',
+    '    password: ' + ystr_noquote(password),
+    '    network: ws',
+    '    sni: ' + ystr_noquote(server),
+    '    skip-cert-verify: true',
+    '    ws-opts:',
+    '      path: ' + ystr_noquote(path),
+    '      headers:',
+    '        Host: ' + ystr_noquote(bug),
+  ];
+  return a;
+}
+
+function tplTrojanXtlsSni(name, server, password, bug, path, grpcName) {
+  const n = 'TRJXTLSNI ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(server),
+    '    port: 443',
+    '    type: trojan',
     '    password: ' + ystr_noquote(password),
     '    flow: xtls-rprx-direct',
+    '    skip-cert-verify: true',
+    '    sni: ' + ystr_noquote(bug),
     '    udp: true',
-    '    tls: true'
   ];
-  if (sni) a.push('    sni: ' + ystr_noquote(sni));
   return a;
 }
-function tplVlessWsCdn(name, server, port, uuid, sni, path, tls) {
-  const n = 'VLSWSCDN' + (tls ? '' : 'NTLS') + ' ' + name;
+
+function tplTrojanGrpcSni(name, server, password, bug, path, grpcName) {
+  const n = 'TRJGRPCSNI ' + name;
   const a = [
     '  - name: ' + ystr_noquote(n),
-    '    type: vless',
+    '    type: trojan',
     '    server: ' + ystr_noquote(server),
-    '    port: ' + (Number(port) || (tls ? 443 : 80)),
-    '    uuid: ' + ystr_noquote(uuid),
+    '    port: 443',
+    '    password: ' + ystr_noquote(password),
     '    udp: true',
-    '    network: ws'
-  ];
-  if (tls) a.push('    tls: true');
-  if (sni) a.push('    servername: ' + ystr_noquote(sni));
-  a.push('    ws-opts:');
-  a.push('      path: /' + ystr_noquote(path || ''));
-  a.push('      headers:\n        Host: ' + ystr_noquote(server));
-  return a;
-}
-function tplVlessGrpc(name, server, port, uuid, sni, serviceName, tls) {
-  const n = 'VLSGRPC ' + name;
-  const a = [
-    '  - name: ' + ystr_noquote(n),
-    '    type: vless',
-    '    server: ' + ystr_noquote(server),
-    '    port: ' + (Number(port) || 443),
-    '    uuid: ' + ystr_noquote(uuid),
-    '    udp: true',
+    '    sni: ' + ystr_noquote(bug),
+    '    skip-cert-verify: true',
     '    network: grpc',
     '    grpc-opts:',
-    '      grpc-service-name: ' + ystr_noquote(serviceName || 'ServiceName')
+    '      grpc-service-name: ' + ystr_noquote(grpcName),
   ];
-  if (tls) a.push('    tls: true');
-  if (sni) a.push('    servername: ' + ystr_noquote(sni));
   return a;
 }
-function tplVmessWsCdn(name, server, port, uuid, sni, path, tls) {
-  const n = 'VMSWSCDN' + (tls ? '' : 'NTLS') + ' ' + name;
+
+function tplVmessWsSni(name, server, password, bug, path, grpcName) {
+  const n = 'VMSWSSNI ' + name;
   const a = [
     '  - name: ' + ystr_noquote(n),
     '    type: vmess',
-    '    server: ' + ystr_noquote(sni),
-    '    port: ' + (Number(port)),
-    '    uuid: ' + ystr_noquote(uuid),
+    '    server: ' + ystr_noquote(server),
+    '    port: 443',
+    '    uuid: ' + ystr_noquote(password),
     '    alterId: 0',
     '    cipher: auto',
     '    udp: true',
-    '    tls: ' + tls,
+    '    tls: true',
+    '    skip-cert-verify: true',
+    '    servername: ' + ystr_noquote(bug),
+    '    network: ws',
+    '    ws-opts:',
+    '      path: /' + ystr_noquote(path),
+    '      headers:',
+    '        Host: ' + ystr_noquote(bug),
+  ];
+  return a;
+}
+
+function tplVmessWsCdn(name, server, password, bug, path, grpcName) {
+  const n = 'VMSWSCDN ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    type: vmess',
+    '    server: ' + ystr_noquote(bug),
+    '    port: 443',
+    '    uuid: ' + ystr_noquote(password),
+    '    alterId: 0',
+    '    cipher: auto',
+    '    udp: true',
+    '    tls: true',
     '    skip-cert-verify: true',
     '    servername: ' + ystr_noquote(server),
     '    network: ws',
     '    ws-opts:',
     '      path: /' + ystr_noquote(path),
     '      headers:',
-    '          Host: ' + ystr_noquote(server),
+    '        Host: ' + ystr_noquote(server),
   ];
   return a;
 }
-function tplVmessGrpc(name, server, port, uuid, sni, serviceName, tls) {
-  const n = 'VMSGRPC ' + name;
+
+function tplVmessWsCdnNtls(name, server, password, bug, path, grpcName) {
+  const n = 'VMSWSCDNNTLS ' + name;
   const a = [
     '  - name: ' + ystr_noquote(n),
     '    type: vmess',
-    '    server: ' + ystr_noquote(server),
-    '    port: ' + (Number(port) || 443),
-    '    uuid: ' + ystr_noquote(uuid),
+    '    server: ' + ystr_noquote(bug),
+    '    port: 80',
+    '    uuid: ' + ystr_noquote(password),
     '    alterId: 0',
     '    cipher: auto',
     '    udp: true',
+    '    tls: false',
+    '    skip-cert-verify: true',
+    '    servername: ' + ystr_noquote(server),
+    '    network: ws',
+    '    ws-opts:',
+    '      path: /' + ystr_noquote(path),
+    '      headers:',
+    '        Host: ' + ystr_noquote(server),
+  ];
+  return a;
+}
+
+function tplVmessGrpcSni(name, server, password, bug, path, grpcName) {
+  const n = 'VMSGRPCSNI ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(server),
+    '    port: 443',
+    '    type: vmess',
+    '    uuid: ' + ystr_noquote(password),
+    '    alterId: 0',
+    '    cipher: auto',
+    '    network: grpc',
+    '    tls: true',
+    '    servername: ' + ystr_noquote(bug),
+    '    skip-cert-verify: true',
+    '    grpc-opts:',
+    '      grpc-service-name: ' + ystr_noquote(grpcName),
+  ];
+  return a;
+}
+
+function tplVlessWsSni(name, server, password, bug, path, grpcName) {
+  const n = 'VLSWSSNI ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(server),
+    '    port: 443',
+    '    type: vless',
+    '    uuid: ' + ystr_noquote(password),
+    '    cipher: auto',
+    '    tls: true',
+    '    alterId: 0',
+    '    skip-cert-verify: true',
+    '    servername: ' + ystr_noquote(bug),
+    '    network: ws',
+    '    ws-opts:',
+    '      path: /' + ystr_noquote(path),
+    '      headers:',
+    '        Host: ' + ystr_noquote(bug),
+  ];
+  return a;
+}
+
+function tplVlessWsCdn(name, server, password, bug, path, grpcName) {
+  const n = 'VLSWSCDN ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(bug),
+    '    port: 443',
+    '    type: vless',
+    '    uuid: ' + ystr_noquote(password),
+    '    cipher: auto',
+    '    tls: true',
+    '    skip-cert-verify: true',
+    '    servername: ' + ystr_noquote(server),
+    '    network: ws',
+    '    ws-opts:',
+    '      path: /' + ystr_noquote(path),
+    '      headers:',
+    '        Host: ' + ystr_noquote(server),
+  ];
+  return a;
+}
+
+function tplVlessWsCdnNtls(name, server, password, bug, path, grpcName) {
+  const n = 'VLSWSCDNNTLS ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(bug),
+    '    port: 80',
+    '    type: vless',
+    '    uuid: ' + ystr_noquote(password),
+    '    cipher: auto',
+    '    tls: false',
+    '    skip-cert-verify: true',
+    '    servername: ' + ystr_noquote(server),
+    '    network: ws',
+    '    ws-opts:',
+    '      path: /' + ystr_noquote(path),
+    '      headers:',
+    '        Host: ' + ystr_noquote(server),
+    '    udp: true',
+  ];
+  return a;
+}
+
+function tplVlessXtlsSni(name, server, password, bug, path, grpcName) {
+  const n = 'VLSXTLSNI ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(server),
+    '    port: 443',
+    '    type: vless',
+    '    uuid: ' + ystr_noquote(password),
+    '    cipher: auto',
+    '    tls: true',
+    '    flow: xtls-rprx-direct',
+    '    skip-cert-verify: true',
+    '    servername: ' + ystr_noquote(bug),
+  ];
+  return a;
+}
+
+function tplVlessGrpcSni(name, server, password, bug, path, grpcName) {
+  const n = 'VLSGRPCSNI ' + name;
+  const a = [
+    '  - name: ' + ystr_noquote(n),
+    '    server: ' + ystr_noquote(server),
+    '    port: 443',
+    '    type: vless',
+    '    uuid: ' + ystr_noquote(password),
+    '    cipher: auto',
+    '    tls: true',
+    '    skip-cert-verify: true',
+    '    servername: ' + ystr_noquote(bug),
     '    network: grpc',
     '    grpc-opts:',
-    '      grpc-service-name: ' + ystr_noquote(serviceName || 'ServiceName')
+    '    grpc-mode: gun',
+    '    grpc-service-name: ' + ystr_noquote(grpcName),
+    '    udp: true',
   ];
-  if (tls) a.push('    tls: true');
-  if (sni) a.push('    servername: ' + ystr_noquote(sni));
   return a;
 }
