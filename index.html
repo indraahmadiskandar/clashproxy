@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Open Clash Proxy Generator</title>
-<link rel="icon" href="favicon.png" type="image/png" sizes="16x16">
+<link rel="icon" href="assets/favicon.png" type="image/png" sizes="16x16">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Generate Open Clash Proxy YAML easily from Excel. Support Trojan, Vmess, Vless, and more. Fast, simple, and free!">
 <meta name="keywords" content="OpenClash, Clash, Proxy, YAML, Generator, Trojan, Vmess, Vless, Excel, Converter, VPN, SNI, CDN">
@@ -12,30 +12,12 @@
 <meta property="og:description" content="Generate Open Clash Proxy YAML easily from Excel. Support Trojan, Vmess, Vless, and more.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://clashproxy.vercel.app/">
-<meta property="og:image" content="https://clashproxy.vercel.app/favicon.png">
+<meta property="og:image" content="https://clashproxy.vercel.app/assets/favicon.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Open Clash Proxy Generator">
 <meta name="twitter:description" content="Generate Open Clash Proxy YAML easily from Excel. Support Trojan, Vmess, Vless, and more.">
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<style>
-  body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:#0e1224;color:#eaf0ff}
-  header{padding:16px 20px;border-bottom:1px solid #1e2746}
-  main{padding:20px;max-width:1200px;margin:0 auto;display:grid;gap:16px}
-  .card{background:#151b2f;border:1px solid #263155;border-radius:12px;padding:16px}
-  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-  input[type=file]{padding:10px;background:#0f1530;border:1px dashed #2a3460;border-radius:10px;color:#aeb8d8}
-  textarea{background:#0f1530;border:1px solid #2a3460;border-radius:10px;color:#dfe7ff;padding:8px 10px;width:100%;min-height:420px}
-  .btn{padding:10px 14px;border-radius:10px;border:1px solid #2a3460;background:#0f1530;color:#fff;cursor:pointer}
-  .btn.primary{background:linear-gradient(180deg,#2a7bff,#1f5ee6);border:none}
-  .grid{display:grid;grid-template-columns: 1fr 1fr;gap:16px}
-  @media(max-width:980px){.grid{grid-template-columns:1fr}}
-  table{width:100%;border-collapse:collapse;font-size:12.5px}
-  th,td{border-bottom:1px solid #23305a;padding:8px 10px;text-align:left}
-  th{position:sticky;top:0;background:#101731}
-  .optcol{columns: 280px 3; column-gap:16px}
-  .optcol label{display:block; break-inside:avoid; margin-bottom:6px;}
-</style>
+<link rel="stylesheet" type="text/css" href="assets/style.css">
 </head>
 <body>
 <header>
@@ -67,7 +49,7 @@
       <button id="parse" class="btn primary" disabled>Parse Excel</button>
       <button id="gen" class="btn" disabled>Generate YAML</button>
       <button id="dl" class="btn" disabled>Download YAML</button>
-		<a href="TEMPLATE_PROXY_OPENCLASH.xlsx" target="_blank" rel="noopener" class="btn">Download Template</a>
+		<a href="assets/TEMPLATE_PROXY_OPENCLASH.xlsx" target="_blank" rel="noopener" class="btn">Download Template</a>
 	</div>
   </section>
 
@@ -96,7 +78,9 @@
 </main>
 
 <!-- libs -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-<script src="customs.js"></script>
+<script src="assets/customs.js"></script>
 </body>
 </html>
