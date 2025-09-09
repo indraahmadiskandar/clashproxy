@@ -45,6 +45,12 @@ $(function () {
     });
   })();
 
+  toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-center",
+  };
+
   // ===== File change -> enable Parse =====
   $file.on('change', function () {
     var hasFile = (this.files && this.files.length > 0);
@@ -79,13 +85,18 @@ $(function () {
     $genBtn.prop('disabled', hostCols.length === 0);
     $dlBtn.prop('disabled', true);
     $out.val('');
+
+    // Tambahkan toastr success
+    toastr.success('Excel berhasil diparse, silahkan lanjutkan Generate YAML');
   });
+
 
   // ===== Generate YAML =====
   $genBtn.on('click', function () {
     var yaml = generateYaml();
     $out.val(yaml);
     $dlBtn.prop('disabled', $.trim(yaml) === '');
+    toastr.success('YAML berhasil di generate, silahkan download YAML');
   });
 
   // ===== Download YAML =====
@@ -493,13 +504,7 @@ $(function () {
 
   // Expose generateYaml if needed elsewhere
   window.generateYaml = generateYaml;
-});
 
-
-// ===== Added Navbar Dropdown & Modal Logic =====
-
-// Modal logic
-(function () {
   var btn = document.getElementById('btnTutor');
   var modal = document.getElementById('tutorModal');
   var backdrop = document.getElementById('modalBackdrop');
@@ -512,10 +517,7 @@ $(function () {
   closeBtn.addEventListener('click', closeM);
   backdrop.addEventListener('click', closeM);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
-})();
 
-/* ==== NAVBAR DROPDOWN & TUTOR MODAL ==== */
-$(function () {
   // Dropdown Menu
   var $dd = $('#menuDropdown');
   var $toggle = $dd.find('.dropdown-toggle');
