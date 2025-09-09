@@ -494,3 +494,60 @@ $(function () {
   // Expose generateYaml if needed elsewhere
   window.generateYaml = generateYaml;
 });
+
+
+// ===== Added Navbar Dropdown & Modal Logic =====
+
+// Modal logic
+(function () {
+  var btn = document.getElementById('btnTutor');
+  var modal = document.getElementById('tutorModal');
+  var backdrop = document.getElementById('modalBackdrop');
+  var closeBtn = document.getElementById('closeTutor');
+
+  function openM() { modal.style.display = 'block'; backdrop.style.display = 'block'; }
+  function closeM() { modal.style.display = 'none'; backdrop.style.display = 'none'; }
+
+  btn.addEventListener('click', openM);
+  closeBtn.addEventListener('click', closeM);
+  backdrop.addEventListener('click', closeM);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
+})();
+
+/* ==== NAVBAR DROPDOWN & TUTOR MODAL ==== */
+$(function () {
+  // Dropdown Menu
+  var $dd = $('#menuDropdown');
+  var $toggle = $dd.find('.dropdown-toggle');
+  $toggle.on('click', function (e) {
+    e.stopPropagation();
+    $dd.toggleClass('open');
+  });
+  $dd.find('.has-sub > a').on('click', function (e) {
+    e.preventDefault();
+    $(this).parent().toggleClass('open');
+  });
+  $(document).on('click', function () { $dd.removeClass('open'); });
+
+  // Tutor Modal
+  var $modal = $('#tutorModal'), $backdrop = $('#modalBackdrop');
+  function openM() { $modal.show(); $backdrop.show(); }
+  function closeM() { $modal.hide(); $backdrop.hide(); }
+
+  $('#btnTutor').on('click', openM);
+  $('#closeTutor').on('click', closeM);
+  $backdrop.on('click', closeM);
+  $(document).on('keydown', function (e) { if (e.key === 'Escape') closeM(); });
+
+  // Responsive Tables: wrap & auto wrap text
+  function wrapResponsive($container) {
+    $container.find('table').each(function () {
+      var $tb = $(this);
+      if (!$tb.parent().hasClass('table-responsive')) {
+        $tb.wrap('<div class="table-responsive"></div>');
+      }
+    });
+  }
+  wrapResponsive($('#hosts'));
+  $('[id*="bug"],[class*="bug"]').each(function () { wrapResponsive($(this)); });
+});
