@@ -227,6 +227,8 @@ $(function () {
             pushAll(lines, tplVmessWsCdnNtls(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
           } else if (mode === 'vmess_grpc_sni') {
             pushAll(lines, tplVmessGrpcSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+          } else if (mode === 'vmess_wc') {
+            pushAll(lines, tplVmessWc(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
           } else if (mode === 'vless_ws_sni') {
             pushAll(lines, tplVlessWsSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
           } else if (mode === 'vless_ws_cdn') {
@@ -406,6 +408,27 @@ $(function () {
       '    skip-cert-verify: true',
       '    grpc-opts:',
       '      grpc-service-name: ' + ystr_noquote(grpcName),
+    ];
+  }
+  function tplVmessWc(name, server, password, bug, path, grpcName) {
+    var n = 'VMSWC ' + name;
+    return [
+      '  - name: ' + ystr_noquote(n),
+      '    type: vmess',
+      '    server: ' + ystr_noquote(bug),
+      '    port: 443',
+      '    uuid: ' + ystr_noquote(password),
+      '    alterId: 0',
+      '    cipher: auto',
+      '    udp: true',
+      '    tls: true',
+      '    skip-cert-verify: true',
+      '    servername: ' + ystr_noquote(bug) + '.' + ystr_noquote(server),
+      '    network: ws',
+      '    ws-opts:',
+      '      path: /' + ystr_noquote(path),
+      '      headers:',
+      '        Host: ' + ystr_noquote(bug) + '.' + ystr_noquote(server),
     ];
   }
   function tplVlessWsSni(name, server, password, bug, path, grpcName) {
