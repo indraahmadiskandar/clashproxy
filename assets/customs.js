@@ -239,6 +239,8 @@ $(function () {
             pushAll(lines, tplVlessXtlsSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
           } else if (mode === 'vless_grpc_sni') {
             pushAll(lines, tplVlessGrpcSni(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
+          } else if (mode === 'vless_wc') {
+            pushAll(lines, tplVlessWc(nameBase, baseServer, h.password, bug, basePath, h.grpcName));
           }
         }
       }
@@ -522,6 +524,25 @@ $(function () {
       '    grpc-mode: gun',
       '    grpc-service-name: ' + ystr_noquote(grpcName),
       '    udp: true',
+    ];
+  }
+  function tplVlessWc(name, server, password, bug, path, grpcName) {
+    var n = 'VLSWC ' + name;
+    return [
+      '  - name: ' + ystr_noquote(n),
+      '    server: ' + ystr_noquote(bug),
+      '    port: 443',
+      '    type: vless',
+      '    uuid: ' + ystr_noquote(password),
+      '    cipher: auto',
+      '    tls: true',
+      '    skip-cert-verify: true',
+      '    servername: ' + ystr_noquote(bug) + '.' + ystr_noquote(server),
+      '    network: ws',
+      '    ws-opts:',
+      '      path: /' + ystr_noquote(path),
+      '      headers:',
+      '        Host: ' + ystr_noquote(bug) + '.' + ystr_noquote(server),
     ];
   }
 
